@@ -25,7 +25,7 @@ function App() {
               />
               <Route
                 path="/note/:noteId"
-                element={<NotePage selectedEvalId={selectedEvalId} />}
+                element={<NotePage />}
               />
             </Routes>
           </main>

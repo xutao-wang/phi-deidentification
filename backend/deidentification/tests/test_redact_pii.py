@@ -2,7 +2,7 @@
 
 import pytest
 
-from deidentification.redaction.redact_pii import redact_text, RedactionResult
+from deidentification.redaction.redact_pii import redact_text, RedactionResult, find_pii_positions
 from deidentification.redaction.redaction_formats import RedactionFormat, RedactionFormatter
 
 
@@ -34,6 +34,62 @@ class TestRedactTextBasic:
         result = redact_text(text, entities)
         assert result.text == "[PERSON_NAME] met [PERSON_NAME] at the park"
         assert result.skipped_by_type == {}
+
+
+class TestPunctuatedIdentifiers:
+    @pytest.mark.parametrize(
+        "pii_type,value,tag",
+        [
+            ("phone_number", "(202) 555-0142", "[PHONE_NUMBER]"),
+            ("phone_number", "+12025550142", "[PHONE_NUMBER]"),
+            ("url", "https://example.com/", "[URL]"),
+        ],
+    )
+    def test_redacts_identifier_with_leading_or_trailing_punctuation(self, pii_type, value, tag):
+        text = f"Contact: {value}."
+        result = redact_text(text, [{"type": pii_type, "value": value}])
+        assert result.text == f"Contact: {tag}."
+        assert result.skipped_by_type == {}
+
+    @pytest.mark.parametrize(
+        "pii_type,value",
+        [
+            ("phone_number", "(202) 555-0142"),
+            ("phone_number", "+12025550142"),
+            ("url", "https://example.com/"),
+        ],
+    )
+    def test_positions_include_identifier_punctuation(self, pii_type, value):
+        text = f"Contact: {value}."
+        positions = find_pii_positions(text, [{"type": pii_type, "value": value}])
+        assert positions == [{
+            "type": pii_type,
+            "value": value,
+            "start": len("Contact: "),
+            "end": len("Contact: ") + len(value),
+        }]
+
+    def test_preserves_identifier_substrings_inside_words(self):
+        result = redact_text("SUMMARY: MA", [{"type": "address", "value": "MA"}])
+        assert result.text == "SUMMARY: [ADDRESS]"
+
+    @pytest.mark.parametrize(
+        "label,value",
+        [
+            ("Phone", "(202) 555-0142"),
+            ("Reach me at", "+12025550142"),
+        ],
+    )
+    def test_matches_punctuation_leading_phone_adjacent_to_label(self, label, value):
+        text = f"{label}{value}."
+        entities = [{"type": "phone_number", "value": value}]
+        assert redact_text(text, entities).text == f"{label}[PHONE_NUMBER]."
+        assert find_pii_positions(text, entities) == [{
+            "type": "phone_number",
+            "value": value,
+            "start": len(label),
+            "end": len(label) + len(value),
+        }]
 
 
 class TestRedactTextGrouping:

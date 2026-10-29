@@ -9,7 +9,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from models import (
+from .models import (
     EvaluationSummary,
     EvaluationDetail,
     MetricsSummary,

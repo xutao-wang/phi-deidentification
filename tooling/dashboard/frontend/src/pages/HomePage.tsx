@@ -134,7 +134,7 @@ export default function HomePage({ selectedEvalId }: HomePageProps) {
       <header className="page-header">
         <h1 className="page-title">Evaluation Overview</h1>
         <div className="eval-info">
-          <span className="eval-mode">{evaluation.settings.evaluation_mode}</span>
+          <span className="eval-mode">{String(evaluation.settings.evaluation_mode ?? '')}</span>
           <span className="eval-files">{validFiles.length} files</span>
           {failedFiles.length > 0 && (
             <span className="eval-failed">{failedFiles.length} failed</span>

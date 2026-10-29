@@ -4,11 +4,7 @@ import { getNote, getNoteRedacted, getNoteAnnotations } from '../api/client'
 import NoteViewer from '../components/NoteViewer'
 import './NotePage.css'
 
-interface NotePageProps {
-  selectedEvalId: string | null
-}
-
-export default function NotePage({ selectedEvalId }: NotePageProps) {
+export default function NotePage() {
   const { noteId } = useParams<{ noteId: string }>()
   const [searchParams] = useSearchParams()
   const highlightPosition = searchParams.get('highlight')

@@ -144,7 +144,7 @@ export class PHIDeidentificationStack extends Stack {
     const baseModelId = BEDROCK_MODEL_ID.split('.').slice(1).join('.');
     workerLambda.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['bedrock:InvokeModel'],
+        actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
         resources: [
           `arn:aws:bedrock:*::foundation-model/${baseModelId}`,
           `arn:aws:bedrock:*:*:inference-profile/${BEDROCK_MODEL_ID}`,

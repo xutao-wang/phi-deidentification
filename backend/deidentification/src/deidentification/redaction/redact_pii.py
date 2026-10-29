@@ -115,11 +115,14 @@ def format_pii_tag(pii_type: str) -> str:
 
 
 def make_word_boundary_pattern(value: str) -> re.Pattern[str]:
-    """Create a regex pattern that matches value only at word boundaries.
+    """Match a complete value without matching substrings inside words.
     
-    This prevents matching substrings within words (e.g., "MA" in "SUMMARY").
+    Check word boundaries only at word-character edges. Punctuation already
+    separates a value from adjacent labels, as in "Phone(202) 555-0142".
     """
-    return re.compile(r'\b' + re.escape(value) + r'\b')
+    prefix = r'(?<!\w)' if re.match(r'\w', value) else ''
+    suffix = r'(?!\w)' if re.search(r'\w$', value) else ''
+    return re.compile(prefix + re.escape(value) + suffix)
 
 
 def redact_text(
